@@ -104,6 +104,25 @@ async function run() {
       }
       res.send(result);
     });
+    app.get("/jobs-application/jobs/:job_id", async (req, res) => {
+      const jobid = req.params.job_id;
+      const query = { job_id: jobid };
+      const result = await jobapliction.find(query).toArray();
+      res.send(result);
+    });
+
+    app.patch("/jobs-application/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const data = req.body;
+      const updatedoc = {
+        $set: {
+          status: data.status,
+        },
+      };
+      const result = await jobapliction.updateOne(query, updatedoc);
+      res.send(result);
+    });
     app.delete("/jobs-application/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
