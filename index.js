@@ -32,7 +32,12 @@ async function run() {
     const jobcolletion = client.db("jobportal").collection("Jobs");
     const jobapliction = client.db("jobportal").collection("aplication");
     app.get("/jobs", async (req, res) => {
-      const coursor = jobcolletion.find();
+      const email = req.query.email;
+      let query = {};
+      if (email) {
+        query = { hr_email: email };
+      }
+      const coursor = jobcolletion.find(query);
       const result = await coursor.toArray();
       res.send(result);
     });
@@ -50,6 +55,25 @@ async function run() {
     app.post("/jobs-application", async (req, res) => {
       const application = req.body;
       const result = await jobapliction.insertOne(application);
+
+      // job_id sarche
+
+      const id = application.job_id;
+      const query = { _id: new ObjectId(id) };
+      const job = await jobcolletion.findOne(query);
+      let count = 0;
+      if (job.applicationCount) {
+        count = job.applicationCount + 1;
+      } else {
+        count = 1;
+      }
+      const filter = { _id: new ObjectId(id) };
+      const updatedoc = {
+        $set: {
+          applicationCount: count,
+        },
+      };
+      const updatedata = await jobcolletion.updateOne(filter, updatedoc);
       res.send(result);
     });
     app.get("/jobs-application", async (req, res) => {
